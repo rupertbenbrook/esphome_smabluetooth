@@ -1041,14 +1041,14 @@ void ESP32_SMA_Inverter::HexDump(uint8_t *buf, int count, int radix, uint8_t c) 
 
 //-----------------------------------------------------
 uint16_t ESP32_SMA_Inverter::get_u16(uint8_t *buf) {
-    register uint16_t shrt = 0;
+    uint16_t shrt = 0;
     shrt += *(buf+1);
     shrt <<= 8;
     shrt += *(buf);
     return shrt;
 }
 uint32_t ESP32_SMA_Inverter::get_u32(uint8_t *buf) {
-    register uint32_t lng = 0;
+    uint32_t lng = 0;
     lng += *(buf+3);
     lng <<= 8;
     lng += *(buf+2);
@@ -1059,7 +1059,7 @@ uint32_t ESP32_SMA_Inverter::get_u32(uint8_t *buf) {
     return lng;
 }
 uint64_t ESP32_SMA_Inverter::get_u64(uint8_t *buf) {
-    register uint64_t lnglng = 0;
+    uint64_t lnglng = 0;
     lnglng += *(buf+7);
     lnglng <<= 8;
     lnglng += *(buf+6);
