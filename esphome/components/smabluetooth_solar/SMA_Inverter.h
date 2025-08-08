@@ -33,8 +33,8 @@ SOFTWARE.
 namespace esphome {
 namespace smabluetooth_solar {
 
-#define tokWh(value64)    (double)(value64)/1000
-#define tokW(value32)     (float)(value32)/1000
+#define tokWh(value64)    (double)(value64)/1000.0
+#define tokW(value32)     (float)(value32)/1000.0
 #define toW(value32)      (float)(value32)/1.0
 #define toHour(value64)   (double)(value64)/3600
 #define toAmp(value32)    (float)(value32)/1000
@@ -390,10 +390,7 @@ class ESP32_SMA_Inverter  {
     void logoffSMAInverter();
 
     E_RC ArchiveDayData(time_t startTime);
-    E_RC ReadCurrentData();
-
-
-
+    
     bool connect();
     bool connect(uint8_t remoteAddress[]);
     bool disconnect();
@@ -448,12 +445,14 @@ class ESP32_SMA_Inverter  {
 
     bool btConnected = false;
 
-    char timeBuf[24];
-    char charBuf[256];
-    int  charLen = 0;
+    char timeBuf[24]= {0};
+    const size_t timeBufLen = 24;
+    char charBuf[256]= {0};
+    const size_t charBufLen = 256;
+    size_t  charLen = 0;
 
 
-    char smaInvPass[12];  
+    char smaInvPass[12] = {0};  
     uint8_t smaBTAddress[6]; // SMA bluetooth address
 
     const uint16_t appSUSyID = 125;

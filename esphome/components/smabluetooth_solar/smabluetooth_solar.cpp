@@ -39,6 +39,7 @@ SMA, Speedwire are registered trademarks of SMA Solar Technology AG
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
+
 namespace esphome {
 namespace smabluetooth_solar {
 
@@ -75,6 +76,8 @@ void SmaBluetoothSolar::loop() {
 
   if (nextTime > thisTime) {
     //sleeping
+    App.feed_wdt();
+    delay(10);
     return ;
   }
 
@@ -114,7 +117,7 @@ void SmaBluetoothSolar::loop() {
 
           ESP_LOGI(TAG, "Connecting SMA inverter ..");
           if (smaInverter->connect()) {
-			ESP_LOGD(TAG, "connected to inverter");
+	      		ESP_LOGD(TAG, "connected to inverter");
             inverterState = SmaInverterState::Initialize;
           } else {
             ESP_LOGE(TAG, "Connecting SMA inverter failed");
@@ -161,7 +164,7 @@ void SmaBluetoothSolar::loop() {
 
       if (indexOfInverterDataType<SIZE_INVETER_DATA_TYPE_QUERY) {
         getInverterDataType dataType = invDataTypes[indexOfInverterDataType++];
-        ESP_LOGI(TAG, "Get Data %d", dataType);
+        ESP_LOGI(TAG, "Get Data (%d)", dataType);
         E_RC rc = smaInverter->getInverterData(dataType);
         ESP_LOGI(TAG, "Get Data RC %d (%d)", rc, dataType);
         waitMillis = 500;
@@ -190,63 +193,10 @@ void SmaBluetoothSolar::loop() {
     }
     break;
   }
+  //don't wait too long
+  waitMillis =  (waitMillis > 1800 * 1000) ? 1000*1000 : waitMillis;  
   nextTime = thisTime + waitMillis; //wait a bit after beginning
 
-/*
-  if (!hasBegun){
-    hasBegun = true;
-
-    // *** Start BT
-    ESP_LOGW(TAG, "start BT ");
-    App.feed_wdt();
-  }
-
-  //if not yet connected
-  if (nextTime < millis() && !smaInverter->isBtConnected()) {
-    nextTime = millis() + adjustedScanRate;
-
-
-    //connect
-    ESP_LOGW(TAG, "Connecting SMA inverter");
-    if (smaInverter->connect()) {
-      App.feed_wdt();
-      // **** Initialize SMA *******
-      ESP_LOGW(TAG, "BT connected");
-      E_RC rc = smaInverter->initialiseSMAConnection();
-      ESP_LOGI(TAG, "SMA %d \n", rc);
-
-      App.feed_wdt();
-      ESP_LOGW(TAG, "get signal strength");
-      smaInverter->getBT_SignalStrength();
-
-      App.feed_wdt();
-      ESP_LOGW(TAG, "*** logonSMAInverter");
-      rc = smaInverter->logonSMAInverter();
-      ESP_LOGW(TAG, "Logon return code %d\n", rc);
-
-      App.feed_wdt();
-      //reading data
-
-      //smaInverter->ReadCurrentData();
-      //skip all for now and try individual
-      if (smaInverter->isBtConnected()) {
-        ESP_LOGD(TAG, "*** energyreadings");
-        //get the inverter readings here 
-        //rotate through these inverterDataTypes
-        int sizeOfArr = sizeof(invDataTypes) / sizeof(invDataTypes[0]);
-        for (int iIdt=0;iIdt<sizeOfArr;iIdt++) {
-        //for (getInverterDataType iIdt : invDataTypes) {
-          App.feed_wdt(); // watch for ESP32 user task watchdog
-          smaInverter->getInverterData(invDataTypes[iIdt]);
-        }
-      }
-
-      smaInverter->disconnect(); //moved btConnected to inverter class
-
-    }
-
-  }
-*/
   App.feed_wdt();
   delay(10);
   //delay(100);
