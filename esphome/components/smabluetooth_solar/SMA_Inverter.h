@@ -146,7 +146,6 @@ struct InverterData {
     bool hasDayData;
     bool hasMonthData;
     time_t   LastTime;
-    time_t   RawLastTime;
     uint64_t OperationTime;
     uint64_t FeedInTime;
     int32_t DevStatus;
@@ -330,7 +329,6 @@ class ESP32_SMA_Inverter {
     BluetoothConnectionState getConnectionState() const { return connection_state_.load(); }
 
     void requestTimeSync()     { sync_time_requested_ = true; }
-    void requestTimeFetch()    { fetch_time_requested_ = true; }
     void setSolarLocation(float latitude, float longitude);
 
     void initPcktID()              { setPcktID(1); }
@@ -367,8 +365,8 @@ class ESP32_SMA_Inverter {
     E_RC        logonSMAInverter(const char *password, const uint8_t user);
     void        logoffSMAInverter();
     void        setInverterTime(bool force = false);
-    void        fetchInverterTime();
-    void        verifyPendingTimeSync(time_t inverterTime);
+    E_RC        queryCurrentInverterTime(time_t &invTime, time_t &invLastTimeSet,
+                                         uint32_t &tz_dst, uint32_t &timesetCount);
 
     // ---- Low-level BT I/O (blocking on stream buffer — safe inside btTask) ----
     uint8_t BTgetByte();           // returns 0 and sets readTimeout on timeout
@@ -410,12 +408,7 @@ class ESP32_SMA_Inverter {
     volatile bool task_error_         = false;
     volatile bool stop_task_          = false;
     volatile bool sync_time_requested_  = false;
-    volatile bool fetch_time_requested_ = false;
     volatile bool rx_overflow_            = false;
-    bool pending_time_sync_               = false;
-    time_t pending_time_sync_value_       = 0;
-    bool auto_time_sync_pending_           = false;
-    bool spot_time_received_               = false;
     std::atomic<BluetoothConnectionState> connection_state_{BluetoothConnectionState::Stopped};
     bool night_mode_active_             = false;
     bool night_mode_time_invalid_logged_ = false;
